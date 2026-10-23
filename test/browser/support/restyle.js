@@ -2,8 +2,9 @@
 // roots, since a CSS module script is one CSSStyleSheet per document.
 // Adapted from spike-html-conventions (a88828a): demo/restyle.ts, cut to the Lit shadow-root
 // version and loading dist/.
-// From spike-html-packages (c2b4a19): test/browser/support/restyle.js, loading this repository's
-// dist/ and editing the installed foundation's elements sheet, the one the components adopt.
+// Adapted from spike-html-packages (c2b4a19): test/browser/support/restyle.js, loading this
+// repository's dist/ and editing the installed foundation's elements sheet, the one the components
+// adopt.
 
 import elements from "@jaimestill/spike-html-packages-foundation/baseline/elements.css" with { type: "css" };
 import { directories } from "../../../demo/documents.js";

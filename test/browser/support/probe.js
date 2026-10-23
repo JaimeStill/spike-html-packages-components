@@ -2,7 +2,8 @@
 // through its contract alone, and reports every case as a line.
 // Adapted from spike-html-conventions (a88828a): demo/probe.ts and demo/versions.ts, cut to the
 // Lit shadow-root version and loading dist/.
-// From spike-html-packages (c2b4a19): test/browser/support/probe.js, loading this repository's dist/.
+// Adapted from spike-html-packages (c2b4a19): test/browser/support/probe.js, loading this
+// repository's dist/.
 
 import { continued, directories, files, pageSizes } from "../../../demo/documents.js";
 
