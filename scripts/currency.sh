@@ -46,16 +46,9 @@ while read -r package pin; do
   fi
 done <<<"$pins"
 
-# Each action a workflow uses, against its repository's latest release; none while no workflow
-# exists.
-shopt -s nullglob
-workflows=(.github/workflows/*.yml)
-uses=""
-if ((${#workflows[@]} > 0)); then
-  uses=$(grep -ho 'uses: *[^ ]*@[^ ]*' "${workflows[@]}" | sed 's/uses: *//' | sort -u) || true
-fi
+# Each action a workflow uses, against its repository's latest release.
+uses=$(grep -ho 'uses: *[^ ]*@[^ ]*' .github/workflows/*.yml | sed 's/uses: *//' | sort -u)
 while read -r action; do
-  [[ -n $action ]] || continue
   repo=$(cut -d/ -f1,2 <<<"${action%@*}")
   latest=$(gh api "repos/$repo/releases/latest" --jq .tag_name)
   if [[ ${action#*@} != "$latest" ]]; then

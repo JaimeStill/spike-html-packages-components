@@ -65,6 +65,12 @@ describe("release pack", () => {
     assert.deepEqual(packed.dependencies, source.dependencies);
   });
 
+  // npm prepares a git dependency that has a build script, which the tag's tree must never need.
+  test("the packed manifest carries no scripts", () => {
+    const packed = JSON.parse(readFileSync(join(pack, "package.json"), "utf8"));
+    assert.equal(packed.scripts, undefined);
+  });
+
   const foundation = "@jaimestill/spike-html-packages-foundation";
   const github = "github:JaimeStill/spike-html-packages-foundation";
   const faults = {
