@@ -40,7 +40,7 @@ function file(tree, pathname) {
   if (!path.startsWith("/deps/")) return join(tree, path);
   const rest = path.slice("/deps".length);
   const name = Object.keys(deps).find((name) => rest.startsWith(`/${name}/`));
-  return name && join(deps[name], normalize(rest.slice(name.length + 1)));
+  return name && join(deps[name], rest.slice(name.length + 1));
 }
 
 /** Serves the tree on a free loopback port, resolving to its origin and a stop(). */

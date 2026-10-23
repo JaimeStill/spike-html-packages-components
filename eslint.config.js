@@ -38,7 +38,7 @@ const cssImports = [
 // The layer table cut to the components: their sources, which may import themselves and two
 // packages by name, lit and the foundation, which the manifest declares; the foundation is
 // reached only through its install, as a consumer reaches it.
-export const foundation = "@jaimestill/spike-html-packages-foundation";
+const foundation = "@jaimestill/spike-html-packages-foundation";
 export const layers = [{ name: "components", path: "src", may: ["components", "lit", foundation] }];
 
 // The layer is an element by its directory, matched from the root (partialMatch false), with a
@@ -100,8 +100,8 @@ export default defineConfig([
     rules: {
       "import-x/no-unresolved": "error",
       // Each judges an import against package.json: a package name it doesn't declare in
-      // dependencies, which it holds none of (a devDependency ships nothing, and includeInternal
-      // holds the package's own name, which resolves inside it, to the same), in every import form
+      // dependencies (a devDependency ships nothing, and includeInternal holds the package's own
+      // name, which resolves inside it, to the same), in every import form
       // (includeTypes), and a relative path that reaches another package's files.
       "import-x/no-extraneous-dependencies": [
         "error",

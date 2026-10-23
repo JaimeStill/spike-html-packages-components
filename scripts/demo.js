@@ -6,9 +6,7 @@
 import { serve } from "../test/browser/support/server.js";
 
 const server = await serve();
-for (const page of ["components"]) {
-  console.log(`${server.origin}/demo/${page}.html`);
-}
+console.log(`${server.origin}/demo/components.html`);
 process.once("SIGINT", async () => {
   await server.stop();
   process.exit(0);
