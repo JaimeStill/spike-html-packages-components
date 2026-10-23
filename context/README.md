@@ -13,7 +13,8 @@ The README lists the subpaths; the sources and their doc comments are authoritat
 
 - **status badge**: `status-badge.ts` and `status-badge.css`.
 - **entry**: `entry-lit-shadow.ts` and `entry-shadow.css`.
-- **pagination**: `pagination-lit-shadow.ts` and `pagination-shadow.css`, which holds entries in its slot.
+- **pagination**: `pagination-lit-shadow.ts`, which holds entries in its slot, and
+  `pagination-shadow.css`.
 - Each shadow root adopts the installed foundation's `baseline/reset.css` and
   `baseline/elements.css`, then its own sheet; the elements are defined through the foundation's
   `dom.js`.
