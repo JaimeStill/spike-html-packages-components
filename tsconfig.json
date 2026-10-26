@@ -1,7 +1,7 @@
 // The build, src/ into dist/: tsc emits each module's .js and .d.ts. mise run types checks the same
-// sources with --noEmit. The foundation is read as a consumer reads it, through the declared
-// dependency's install: its shipped .d.ts, and the ambient "*.css" declaration its ./css types
-// subpath holds.
+// sources with --noEmit. The foundation is read as a consumer reads it, through the install of
+// the peer at the top level, here its devDependency: its shipped .d.ts, and the ambient "*.css"
+// declaration its ./css types subpath holds.
 // Adapted from spike-html-packages-foundation (5dd8a58): tsconfig.json, with the types of
 // spike-html-packages (c2b4a19): packages/components/tsconfig.json.
 {

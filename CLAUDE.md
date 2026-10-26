@@ -12,4 +12,4 @@ Its goal lives in the coordinator's roadmap, `standards-lab/context/roadmap.toml
   that reads the network.
 - `mise run check`: the check.
 - `mise run currency`: every tool, package, and action pin, and the foundation's tag, behind its
-  latest.
+  latest, and the foundation's peer range if it doesn't admit the latest release.

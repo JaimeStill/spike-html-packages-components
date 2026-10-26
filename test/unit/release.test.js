@@ -2,7 +2,8 @@
 // exports, its license, and its dependencies, by release.js's releaseProblems, as it stands and in
 // scratch copies with one fault each. It packs the dist/ that mise run build writes.
 // Adapted from spike-html-packages-foundation (5dd8a58): test/unit/release.test.js, on the
-// components' pack, with the dependencies' faults.
+// components' pack, with the dependencies' faults: lit's pin, the foundation's peer range, and its
+// devDependency tag.
 
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -62,7 +63,9 @@ describe("release pack", () => {
   test("the pack keeps the dependencies package.json declares, as written", () => {
     const packed = JSON.parse(readFileSync(join(pack, "package.json"), "utf8"));
     const source = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
-    assert.deepEqual(packed.dependencies, source.dependencies);
+    for (const field of ["dependencies", "peerDependencies", "devDependencies"]) {
+      assert.deepEqual(packed[field], source[field], field);
+    }
   });
 
   // npm prepares a git dependency that has a build script, which the tag's tree must never need.
@@ -132,43 +135,111 @@ describe("release pack", () => {
       (_, copy) => (copy.dependencies.lit = "latest"),
       "package.json declares lit latest, not an exact pin",
     ],
-    "the foundation by a #semver: range": [
-      (_, copy) => (copy.dependencies[foundation] = `${github}#semver:^0.1.0`),
-      `package.json declares ${foundation} ${github}#semver:^0.1.0, not an exact pin`,
+    "the foundation in dependencies": [
+      (_, copy) => (copy.dependencies[foundation] = `${github}#v0.1.0`),
+      `package.json declares ${foundation} in dependencies, not as a peer`,
     ],
-    "the foundation by a branch": [
-      (_, copy) => (copy.dependencies[foundation] = `${github}#main`),
-      `package.json declares ${foundation} ${github}#main, not an exact pin`,
+    "a peer by a git spec": [
+      (_, copy) => (copy.peerDependencies[foundation] = `${github}#v0.1.0`),
+      `package.json declares peer ${foundation} ${github}#v0.1.0, not a caret range`,
     ],
-    "the foundation by a commit": [
-      (_, copy) => (copy.dependencies[foundation] = `${github}#29d16c0`),
-      `package.json declares ${foundation} ${github}#29d16c0, not an exact pin`,
+    "a peer by a #semver: spec": [
+      (_, copy) => (copy.peerDependencies[foundation] = `${github}#semver:^0.1.0`),
+      `package.json declares peer ${foundation} ${github}#semver:^0.1.0, not a caret range`,
     ],
-    "the foundation by its default branch": [
-      (_, copy) => (copy.dependencies[foundation] = github),
-      `package.json declares ${foundation} ${github}, not an exact pin`,
+    "a peer by an exact version": [
+      (_, copy) => (copy.peerDependencies[foundation] = "0.1.0"),
+      `package.json declares peer ${foundation} 0.1.0, not a caret range`,
     ],
-    "the foundation from the registry": [
-      (_, copy) => (copy.dependencies[foundation] = "0.1.0"),
-      `package.json declares ${foundation} 0.1.0, not an exact pin`,
+    "a peer by a tilde range": [
+      (_, copy) => (copy.peerDependencies[foundation] = "~0.1.0"),
+      `package.json declares peer ${foundation} ~0.1.0, not a caret range`,
     ],
-    "the foundation by a local path": [
-      (_, copy) => (copy.dependencies[foundation] = "link:../spike-html-packages-foundation"),
-      `package.json declares ${foundation} link:../spike-html-packages-foundation, not an exact pin`,
+    "a peer by any version": [
+      (_, copy) => (copy.peerDependencies[foundation] = "*"),
+      `package.json declares peer ${foundation} *, not a caret range`,
+    ],
+    "no peer": [
+      (_, copy) => delete copy.peerDependencies,
+      `package.json doesn't declare peer ${foundation}`,
+    ],
+    "an undeclared extra peer": [
+      (_, copy) => (copy.peerDependencies["lit-html"] = "^3.3.3"),
+      "package.json declares peer lit-html, which no release needs",
+    ],
+    "the devDependency by a #semver: range": [
+      (_, copy) => (copy.devDependencies[foundation] = `${github}#semver:^0.1.0`),
+      `package.json declares devDependency ${foundation} ${github}#semver:^0.1.0, not an exact release tag`,
+    ],
+    "the devDependency by a branch": [
+      (_, copy) => (copy.devDependencies[foundation] = `${github}#main`),
+      `package.json declares devDependency ${foundation} ${github}#main, not an exact release tag`,
+    ],
+    "the devDependency by a commit": [
+      (_, copy) => (copy.devDependencies[foundation] = `${github}#29d16c0`),
+      `package.json declares devDependency ${foundation} ${github}#29d16c0, not an exact release tag`,
+    ],
+    "the devDependency by its default branch": [
+      (_, copy) => (copy.devDependencies[foundation] = github),
+      `package.json declares devDependency ${foundation} ${github}, not an exact release tag`,
+    ],
+    "the devDependency from the registry": [
+      (_, copy) => (copy.devDependencies[foundation] = "0.1.0"),
+      `package.json declares devDependency ${foundation} 0.1.0, not an exact release tag`,
+    ],
+    "the devDependency by a local path": [
+      (_, copy) => (copy.devDependencies[foundation] = "link:../spike-html-packages-foundation"),
+      `package.json declares devDependency ${foundation} link:../spike-html-packages-foundation, not an exact release tag`,
+    ],
+    "no devDependency": [
+      (_, copy) => delete copy.devDependencies[foundation],
+      `package.json doesn't declare devDependency ${foundation}`,
     ],
     "a missing dependency": [
       (_, copy) => delete copy.dependencies.lit,
       "package.json doesn't declare lit",
     ],
-    "no dependencies": [
-      (_, copy) => delete copy.dependencies,
-      `package.json doesn't declare ${foundation}`,
-    ],
+    "no dependencies": [(_, copy) => delete copy.dependencies, "package.json doesn't declare lit"],
     "an undeclared extra dependency": [
       (_, copy) => (copy.dependencies["lit-html"] = "3.3.3"),
       "package.json declares lit-html, which no release needs",
     ],
   };
+  // The tags a caret range admits: its own major at 1.0.0 and above, its own minor below, and its
+  // own patch below 0.1.0, each at or above the range's floor.
+  const admitted = {
+    "^0.1.0": ["v0.1.0", "v0.1.7"],
+    "^0.0.3": ["v0.0.3"],
+    "^1.2.0": ["v1.2.0", "v1.9.4"],
+  };
+  const denied = {
+    "^0.1.0": ["v0.0.9", "v0.2.0", "v1.1.0"],
+    "^0.0.3": ["v0.0.2", "v0.0.4", "v0.1.3"],
+    "^1.2.0": ["v1.1.9", "v2.2.0"],
+  };
+  for (const [range, tags] of Object.entries(admitted)) {
+    for (const tag of tags) {
+      test(`a devDependency tag ${tag} passes a peer range ${range}`, () => {
+        const problems = faulted((_, copy) => {
+          copy.peerDependencies[foundation] = range;
+          copy.devDependencies[foundation] = `${github}#${tag}`;
+        });
+        assert.deepEqual(problems, []);
+      });
+    }
+  }
+  for (const [range, tags] of Object.entries(denied)) {
+    for (const tag of tags) {
+      test(`fails on a devDependency tag ${tag} with a peer range ${range}`, () => {
+        const problems = faulted((_, copy) => {
+          copy.peerDependencies[foundation] = range;
+          copy.devDependencies[foundation] = `${github}#${tag}`;
+        });
+        const problem = `package.json's devDependency ${foundation} ${github}#${tag} is outside its peer range ${range}`;
+        assert.ok(problems.includes(problem), `expected: ${problem}\ngot: ${problems.join("\n")}`);
+      });
+    }
+  }
   for (const [fault, [change, problem]] of Object.entries(faults)) {
     test(`fails on ${fault}`, () => {
       const problems = faulted(change);

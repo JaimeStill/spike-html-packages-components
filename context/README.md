@@ -2,9 +2,9 @@
 
 spike-html-packages-components is the components layer of
 [spike-html-packages](https://github.com/JaimeStill/spike-html-packages): the status badge, the
-entry, and the pagination, Lit with shadow roots, and their sheets. It is built on the
-foundation's v0.1.0 tag as a consumer installs it, and released by tag, as the Go workspace's
-repositories are.
+entry, and the pagination, Lit with shadow roots, and their sheets. It takes the foundation as a
+peer at `^0.1.0`, builds and tests against the foundation's v0.1.0 tag, and is released by tag, as
+the Go workspace's repositories are.
 This context records only working knowledge the code and the README do not express.
 
 ## Capability map
@@ -35,20 +35,23 @@ The README lists the subpaths; the sources and their doc comments are authoritat
 
 ## Tasks
 
-- `mise run install`: the pins and node_modules; pnpm fetches the foundation's tag from GitHub,
-  and the lockfile records the tag's commit. A github: dependency at the top level needs no pnpm
-  guard; only a consumer of the components, where the foundation sits below the top level, does.
+- `mise run install`: the pins and node_modules; pnpm fetches the foundation's tag from GitHub
+  for the github: devDependency, and the lockfile records the tag's commit. A github: dependency
+  at the top level needs no pnpm guard.
 - `mise run check`: `lint` (ESLint, Prettier, shellcheck, and actionlint), `types` (typescript-go,
   on the sources and on the browser cases' in-page modules against `dist/`), `build`,
   `test:unit`, and `test:browser`; reads no network once `mise run install` has run, and writes
   only `dist/`.
 - `mise run demo`: the demo page, on a fresh build.
 - `mise run currency`: reads the network, so CI never runs it. It checks the foundation's github:
-  tag against the foundation's latest GitHub release.
+  devDependency tag against the foundation's latest GitHub release, and checks that the peer range
+  admits that release, by `caretAdmits` from `test/unit/release.js`, the rule the release test
+  applies.
 
 ## Releases
 
 `release.yml` cuts `v<version>` on a push to main when `package.json`'s version has no tag on the
 remote; its header comment lists the steps. A version bump, with its changelog section, is what
-releases, and a push that bumps nothing ends green. A new foundation release reaches the
-components only by a bump of the github: tag in `package.json`.
+releases, and a push that bumps nothing ends green. A consumer installs any foundation release
+the peer range admits; the github: devDependency tag in `package.json` decides only which release
+the repository builds and tests against.

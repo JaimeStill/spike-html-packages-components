@@ -14,9 +14,10 @@ fail() {
 for bin in eslint prettier; do
   [[ -x node_modules/.bin/$bin ]] || fail "$bin (devDependencies)"
 done
-for package in lit @jaimestill/spike-html-packages-foundation; do
-  [[ -f node_modules/$package/package.json ]] || fail "$package (dependencies)"
-done
+[[ -f node_modules/lit/package.json ]] || fail "lit (dependencies)"
+# The foundation is a peer, which the repository's devDependency installs at its tag.
+[[ -f node_modules/@jaimestill/spike-html-packages-foundation/package.json ]] ||
+  fail "@jaimestill/spike-html-packages-foundation (devDependencies)"
 
 [[ "${1:-}" == browser ]] || exit 0
 shell=$(mise which chrome-headless-shell 2>/dev/null) || fail "chrome-headless-shell"
