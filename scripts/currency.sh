@@ -33,15 +33,11 @@ while read -r package pin; do
       trailing+=$'\n'"package.json: $package ${spec#*#} -> $latest"
     fi
     # A peer (the foundation) is by a caret range, which must admit that latest release, so a
-    # consumer can declare it beside the components: the same leftmost nonzero part and no lower,
-    # so a range below 1.0.0 admits its own 0.y.x only.
+    # consumer can declare it beside the components: by the release test's own rule.
     range=$(node -p 'require("./package.json").peerDependencies?.[process.argv[1]] ?? ""' "$package")
-    if [[ -n $range ]] && ! node -e '
-      const [range, version] = process.argv.slice(1).map((v) => v.replace(/^[\^v]/, "").split(".").map(Number));
-      const atLeast = version[0] - range[0] || version[1] - range[1] || version[2] - range[2];
-      const lead = range.findIndex((part) => part > 0);
-      const same = range.slice(0, (lead < 0 ? 2 : lead) + 1).every((part, i) => part === version[i]);
-      process.exit(atLeast >= 0 && same ? 0 : 1);
+    if [[ -n $range ]] && ! node --input-type=module -e '
+      import { caretAdmits } from "./test/unit/release.js";
+      process.exit(caretAdmits(...process.argv.slice(1)) ? 0 : 1);
     ' "$range" "$latest"; then
       trailing+=$'\n'"package.json: peer $package $range -> ^${latest#v}"
     fi

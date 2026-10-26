@@ -212,7 +212,11 @@ describe("release pack", () => {
     "^0.0.3": ["v0.0.3"],
     "^1.2.0": ["v1.2.0", "v1.9.4"],
   };
-  const denied = { "^0.1.0": ["v0.0.9", "v1.1.0"], "^0.0.3": ["v0.0.4"], "^1.2.0": ["v1.1.9"] };
+  const denied = {
+    "^0.1.0": ["v0.0.9", "v0.2.0", "v1.1.0"],
+    "^0.0.3": ["v0.0.2", "v0.0.4", "v0.1.3"],
+    "^1.2.0": ["v1.1.9", "v2.2.0"],
+  };
   for (const [range, tags] of Object.entries(admitted)) {
     for (const tag of tags) {
       test(`a devDependency tag ${tag} passes a peer range ${range}`, () => {

@@ -2,7 +2,8 @@
 // and form, each with the rules that catch it, and the imports the layer may make in the same
 // layout. layers.test.js lints it.
 // Adapted from spike-html-packages-foundation (5dd8a58): test/unit/layers-tree.js, cut to the
-// components, with the foundation installed in node_modules/ as its devDependency install lays it out.
+// components, with the foundation installed in node_modules/ as its devDependency install lays it
+// out.
 
 import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";

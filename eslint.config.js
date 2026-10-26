@@ -102,8 +102,8 @@ export default defineConfig([
       // Each judges an import against package.json: a package name it doesn't declare in
       // dependencies or peerDependencies, where the foundation is (a devDependency alone ships
       // nothing, and includeInternal holds the package's own name, which resolves inside it, to
-      // the same), in every import form
-      // (includeTypes), and a relative path that reaches another package's files.
+      // the same), in every import form (includeTypes), and a relative path that reaches another
+      // package's files.
       "import-x/no-extraneous-dependencies": [
         "error",
         { devDependencies: false, includeInternal: true, includeTypes: true },
