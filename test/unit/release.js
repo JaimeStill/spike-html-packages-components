@@ -1,6 +1,7 @@
 // A release's shape: a pack of the build checked against the sources, package.json's files and
 // exports, which Node itself resolves, the Apache 2.0 LICENSE its manifest declares, and its
-// dependencies, each pinned exactly. test/unit/release.test.js runs it on a pnpm pack.
+// dependencies, lit pinned exactly and the foundation a peer. test/unit/release.test.js runs it on
+// a pnpm pack.
 // Adapted from spike-html-packages-foundation (5dd8a58): test/unit/release.js, with the
 // dependencies the components declare.
 
@@ -80,22 +81,42 @@ export function licenseProblems(root) {
   return problems;
 }
 
-/** The dependencies every release declares, and nothing else, each by the exact pin it must
- * carry: lit at one version, never a range; and the foundation at one release tag on GitHub,
- * never a range, a branch, a commit, or a #semver: spec, which bun fails. Which version and which
- * tag is package.json's, and mise run currency reports each behind its latest. */
+/** The dependencies every release declares, and nothing else. lit is its one dependency, at one
+ * version, never a range. The foundation is a peer, by a caret range on its versions, never a
+ * git spec: a consumer declares the foundation beside the components, from whichever
+ * source, and one copy serves both, so a restyle of its sheets by package name reaches the
+ * components' shadow roots. The repository's own install of it is a devDependency at one release
+ * tag on GitHub, never a range, a branch, a commit, or a #semver: spec, which bun fails, and a tag
+ * the peer range admits. Which version, range, and tag is package.json's, and mise run currency
+ * reports each behind its latest. */
+const foundation = "@jaimestill/spike-html-packages-foundation";
 const exactVersion = /^\d+\.\d+\.\d+$/;
-const dependencies = {
-  "@jaimestill/spike-html-packages-foundation":
-    /^github:JaimeStill\/spike-html-packages-foundation#v\d+\.\d+\.\d+$/,
-  lit: exactVersion,
-};
+const dependencies = { lit: exactVersion };
+const caretRange = /^\^(\d+)\.(\d+)\.(\d+)$/;
+const foundationTag = /^github:JaimeStill\/spike-html-packages-foundation#v(\d+)\.(\d+)\.(\d+)$/;
+
+/** Whether the caret range's [major, minor, patch] admits the version's: the same leftmost
+ * nonzero part and no lower, so ^0.1.0 admits 0.1.x only. */
+function caretAdmits(range, version) {
+  const [major, minor, patch] = range;
+  const [vMajor, vMinor, vPatch] = version;
+  const atLeast =
+    vMajor > major ||
+    (vMajor === major && (vMinor > minor || (vMinor === minor && vPatch >= patch)));
+  if (!atLeast) return false;
+  if (major > 0) return vMajor === major;
+  if (minor > 0) return vMajor === 0 && vMinor === minor;
+  return vMajor === 0 && vMinor === 0 && vPatch === patch;
+}
 
 /** What keeps root, a pack's package/, from declaring exactly the dependencies a release needs,
- * each pinned exactly, one line each. */
+ * in the form each takes, one line each. */
 export function dependencyProblems(root) {
   const problems = [];
-  const declared = JSON.parse(readFileSync(join(root, "package.json"), "utf8")).dependencies ?? {};
+  const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+  const declared = manifest.dependencies ?? {};
+  const peers = manifest.peerDependencies ?? {};
+  const dev = manifest.devDependencies ?? {};
   for (const [name, pin] of Object.entries(dependencies)) {
     if (!(name in declared)) problems.push(`package.json doesn't declare ${name}`);
     else if (!pin.test(declared[name])) {
@@ -103,8 +124,35 @@ export function dependencyProblems(root) {
     }
   }
   for (const name of Object.keys(declared)) {
-    if (!(name in dependencies))
+    if (name === foundation) {
+      problems.push(`package.json declares ${foundation} in dependencies, not as a peer`);
+    } else if (!(name in dependencies)) {
       problems.push(`package.json declares ${name}, which no release needs`);
+    }
+  }
+  for (const name of Object.keys(peers)) {
+    if (name !== foundation)
+      problems.push(`package.json declares peer ${name}, which no release needs`);
+  }
+  const range = peers[foundation]?.match(caretRange);
+  if (!(foundation in peers)) problems.push(`package.json doesn't declare peer ${foundation}`);
+  else if (!range) {
+    problems.push(
+      `package.json declares peer ${foundation} ${peers[foundation]}, not a caret range`,
+    );
+  }
+  const tag = dev[foundation]?.match(foundationTag);
+  if (!(foundation in dev))
+    problems.push(`package.json doesn't declare devDependency ${foundation}`);
+  else if (!tag) {
+    problems.push(
+      `package.json declares devDependency ${foundation} ${dev[foundation]}, not an exact release tag`,
+    );
+  }
+  if (range && tag && !caretAdmits(range.slice(1).map(Number), tag.slice(1).map(Number))) {
+    problems.push(
+      `package.json's devDependency ${foundation} ${dev[foundation]} is outside its peer range ${peers[foundation]}`,
+    );
   }
   return problems;
 }

@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@jaimestill/spike-html-packages-foundation':
-        specifier: github:JaimeStill/spike-html-packages-foundation#v0.1.0
-        version: https://codeload.github.com/JaimeStill/spike-html-packages-foundation/tar.gz/29d16c03e752d11fe683e01a85d4470bb336e970
       lit:
         specifier: 3.3.3
         version: 3.3.3
@@ -18,6 +15,9 @@ importers:
       '@eslint/js':
         specifier: 10.0.1
         version: 10.0.1(eslint@10.13.0(supports-color@7.2.0))
+      '@jaimestill/spike-html-packages-foundation':
+        specifier: github:JaimeStill/spike-html-packages-foundation#v0.1.0
+        version: https://codeload.github.com/JaimeStill/spike-html-packages-foundation/tar.gz/29d16c03e752d11fe683e01a85d4470bb336e970
       eslint:
         specifier: 10.13.0
         version: 10.13.0(supports-color@7.2.0)

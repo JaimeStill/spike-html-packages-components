@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Prints `<where>: <item> <pin> -> <latest>` for each mise tool, package.json dependency, GitHub
-# Actions pin, and github: dependency's tag behind its latest, and exits 1 if any; prints nothing
-# when all are current. Reads the network.
+# Actions pin, and github: devDependency's tag behind its latest, and each peer range that doesn't
+# admit its package's latest release, and exits 1 if any; prints nothing when all are current.
+# Reads the network.
 # Adapted from spike-html-packages-foundation (5dd8a58): scripts/currency.sh, with the github:
 # dependencies' tags against their repositories' latest releases.
 set -euo pipefail
@@ -23,13 +24,26 @@ pins=$(node -p '
 ')
 typescript_eslint=$(node -p 'require("./package.json").devDependencies["typescript-eslint"]')
 while read -r package pin; do
-  # A github: dependency (the foundation) is pinned to its repository's release tag, which the
+  # A github: devDependency (the foundation) is pinned to its repository's release tag, which the
   # registry doesn't hold: its tag against that repository's latest release.
   if [[ $pin == github:* ]]; then
     spec=${pin#github:}
     latest=$(gh api "repos/${spec%%#*}/releases/latest" --jq .tag_name)
     if [[ ${spec#*#} != "$latest" ]]; then
       trailing+=$'\n'"package.json: $package ${spec#*#} -> $latest"
+    fi
+    # A peer (the foundation) is by a caret range, which must admit that latest release, so a
+    # consumer can declare it beside the components: the same leftmost nonzero part and no lower,
+    # so a range below 1.0.0 admits its own 0.y.x only.
+    range=$(node -p 'require("./package.json").peerDependencies?.[process.argv[1]] ?? ""' "$package")
+    if [[ -n $range ]] && ! node -e '
+      const [range, version] = process.argv.slice(1).map((v) => v.replace(/^[\^v]/, "").split(".").map(Number));
+      const atLeast = version[0] - range[0] || version[1] - range[1] || version[2] - range[2];
+      const lead = range.findIndex((part) => part > 0);
+      const same = range.slice(0, (lead < 0 ? 2 : lead) + 1).every((part, i) => part === version[i]);
+      process.exit(atLeast >= 0 && same ? 0 : 1);
+    ' "$range" "$latest"; then
+      trailing+=$'\n'"package.json: peer $package $range -> ^${latest#v}"
     fi
     continue
   fi
