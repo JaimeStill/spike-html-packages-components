@@ -35,8 +35,8 @@ bun add https://github.com/JaimeStill/spike-html-packages-components/releases/do
 - pnpm needs no guard: both are the project's own dependencies, at the top level, so
   `blockExoticSubdeps` never applies.
 - bun needs no guard.
-- Without the foundation declared, npm and pnpm fail the install, and bun installs no foundation,
-  so the components' imports of it fail in the page.
+- Without the foundation declared, the install fails under all three, on the foundation's 404 from
+  npmjs; bun still leaves the components installed with no foundation beside them.
 
 ## Use
 

@@ -11,8 +11,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 
 - The foundation is a peer dependency at `^0.1.0`, no longer a dependency by its tag: a consumer
-  now declares the foundation beside the components (breaking), and the one copy serves both, from
-  the tag, the release tarball, or GitHub Packages. lit 3.3.3 is the one dependency.
+  now declares the foundation beside the components (breaking), and the one copy serves both,
+  from the tag or the release tarball. lit 3.3.3 is the one dependency.
 
 ## [v0.1.0] - 2026-10-23
 
